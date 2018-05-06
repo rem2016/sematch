@@ -308,9 +308,16 @@ class WordSimEvaluation:
         """
         word_pairs, human = self._dataset.load_dataset(dataset_name)
         sim_values = [sim_func(w1, w2) for w1, w2 in word_pairs]
-        sim_values = list(map(lambda x: round(x, 3), sim_values))
-        cor = self._correlation(sim_values, human)[0]
-        cor = round(cor, 3)
+        _human, _sim_values = [], []
+        for i in range(len(sim_values)):
+            if abs(sim_values[i]) < 1e-7:
+                continue
+            _human.append(human[i])
+            _sim_values.append(sim_values[i])
+        if len(_sim_values) == 0:
+            return -10
+
+        cor = self._correlation(_sim_values, _human)[0]
         if save_results:
             self._dataset.save_result(cor, sim_values, sim_name, dataset_name)
         return cor
